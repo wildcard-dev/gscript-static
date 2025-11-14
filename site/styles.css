@@ -119,6 +119,15 @@ nav {
     font-weight: 600;
 }
 
+.login-link {
+    color: var(--text-dark) !important;
+    font-weight: 600 !important;
+}
+
+.login-link:hover {
+    color: var(--primary) !important;
+}
+
 .cta-button {
     background: var(--primary);
     color: #ffffff;
