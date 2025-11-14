@@ -114,6 +114,11 @@ nav {
     color: var(--primary);
 }
 
+.nav-links a.cta-button {
+    color: #ffffff;
+    font-weight: 600;
+}
+
 .cta-button {
     background: var(--primary);
     color: #ffffff;
