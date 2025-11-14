@@ -84,6 +84,47 @@
             overflow-x: hidden;
         }
 
+        /* Screen reader only content */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* Skip to main content link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary);
+            color: white;
+            padding: 8px;
+            text-decoration: none;
+            z-index: 100;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Universal focus styles for better keyboard navigation */
+        a:focus,
+        button:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* Improve link underlines for accessibility */
+        a {
+            text-decoration-skip-ink: auto;
+        }
+
         /* Navigation */
         nav {
             background: var(--bg-white);
@@ -133,19 +174,25 @@
 
         .cta-button {
             background: var(--primary);
-            color: white;
+            color: #ffffff;
             padding: 0.75rem 1.5rem;
             border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
             display: inline-block;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
         }
 
         .cta-button:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .cta-button:focus {
+            outline: 2px solid var(--primary-dark);
+            outline-offset: 2px;
         }
 
         /* Mobile Menu */
@@ -242,12 +289,18 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            cursor: pointer;
         }
 
         .secondary-button:hover {
             border-color: var(--primary);
             color: var(--primary);
             transform: translateY(-2px);
+        }
+
+        .secondary-button:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
         }
 
         .trust-badges {
@@ -779,6 +832,86 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
+        /* Video Modal */
+        .video-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .video-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .video-modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 1200px;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .video-modal-content video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .video-modal-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 36px;
+            font-weight: 300;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            line-height: 36px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            z-index: 10001;
+        }
+
+        .video-modal-close:hover {
+            transform: scale(1.1);
+        }
+
+        .video-modal-close:focus {
+            outline: 2px solid white;
+            outline-offset: 4px;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             h1 {
@@ -812,12 +945,24 @@
             .cta-content h2 {
                 font-size: 2rem;
             }
+
+            .video-modal-content {
+                width: 95%;
+            }
+
+            .video-modal-close {
+                top: -35px;
+                font-size: 32px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Skip to main content link for keyboard navigation -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <!-- Navigation -->
-    <nav>
+    <nav role="navigation" aria-label="Main navigation">
         <div class="nav-container">
             <div class="logo">iinkwell</div>
             <div class="nav-links">
@@ -827,12 +972,14 @@
                 <a href="#faq">FAQ</a>
                 <a href="https://app.g-script.org/sign-up" class="cta-button">Start Free Trial</a>
             </div>
-            <button class="mobile-menu-toggle">☰</button>
+            <button class="mobile-menu-toggle" aria-label="Toggle mobile menu" aria-expanded="false">☰</button>
         </div>
     </nav>
 
+    <!-- Main Content -->
+    <main id="main-content">
     <!-- Hero Section -->
-    <section class="hero">
+    <section class="hero" aria-label="Hero section">
         <div class="hero-container">
             <div class="badge">✨ Trusted by Professional Writers</div>
             <h1>Write Scripts Where Your Team Already Works</h1>
@@ -842,20 +989,20 @@
             </p>
             <div class="hero-cta">
                 <a href="https://app.g-script.org/sign-up" class="cta-button">Start Writing Free</a>
-                <a href="#features" class="secondary-button">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button id="watch-demo-btn" class="secondary-button" aria-label="Watch 2-minute demo video">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                     </svg>
                     Watch 2-min Demo
-                </a>
+                </button>
             </div>
             <div style="margin-top: 3rem;">
                 <p style="text-align: center; color: #6b7280; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 1.5rem;">Used by writers creating content for</p>
-                <div style="display: flex; justify-content: center; align-items: center; gap: 3rem; flex-wrap: wrap;">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/330px-Netflix_2015_logo.svg.png" alt="Netflix" style="height: 28px; opacity: 0.8; transition: all 0.3s ease;" onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)';" onmouseout="this.style.opacity='0.8'; this.style.transform='scale(1)';">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Hulu_logo_%282018%29.svg/330px-Hulu_logo_%282018%29.svg.png" alt="Hulu" style="height: 28px; opacity: 0.8; transition: all 0.3s ease;" onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)';" onmouseout="this.style.opacity='0.8'; this.style.transform='scale(1)';">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Nickelodeon_2023_logo_%28outline%29.svg/1920px-Nickelodeon_2023_logo_%28outline%29.svg.png" alt="Nickelodeon" style="height: 28px; opacity: 0.8; transition: all 0.3s ease;" onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)';" onmouseout="this.style.opacity='0.8'; this.style.transform='scale(1)';">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Disney%2BLogo_2024_Black.png/330px-Disney%2BLogo_2024_Black.png" alt="Disney" style="height: 28px; opacity: 0.8; transition: all 0.3s ease;" onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)';" onmouseout="this.style.opacity='0.8'; this.style.transform='scale(1)';">
+                <div style="display: flex; justify-content: center; align-items: center; gap: 3rem; flex-wrap: wrap;" role="list" aria-label="Companies using iinkwell">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/330px-Netflix_2015_logo.svg.png" alt="Netflix logo" style="height: 28px; opacity: 0.8; transition: all 0.3s ease;" onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)';" onmouseout="this.style.opacity='0.8'; this.style.transform='scale(1)';" role="listitem">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Hulu_logo_%282018%29.svg/330px-Hulu_logo_%282018%29.svg.png" alt="Hulu logo" style="height: 28px; opacity: 0.8; transition: all 0.3s ease;" onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)';" onmouseout="this.style.opacity='0.8'; this.style.transform='scale(1)';" role="listitem">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Nickelodeon_2023_logo_%28outline%29.svg/1920px-Nickelodeon_2023_logo_%28outline%29.svg.png" alt="Nickelodeon logo" style="height: 28px; opacity: 0.8; transition: all 0.3s ease;" onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)';" onmouseout="this.style.opacity='0.8'; this.style.transform='scale(1)';" role="listitem">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Disney%2BLogo_2024_Black.png/330px-Disney%2BLogo_2024_Black.png" alt="Disney Plus logo" style="height: 28px; opacity: 0.8; transition: all 0.3s ease;" onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)';" onmouseout="this.style.opacity='0.8'; this.style.transform='scale(1)';" role="listitem">
                 </div>
                 <p style="text-align: center; color: #6b7280; font-style: italic; font-size: 0.95rem; margin-top: 1rem;">and more...</p>
             </div>
@@ -1136,49 +1283,64 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="cta-section">
+    <section class="cta-section" aria-label="Call to action">
         <div class="cta-content">
             <h2>Ready to Transform Your Screenwriting?</h2>
             <p>Join hundreds of writers who've simplified their workflow</p>
             <a href="https://app.g-script.org/sign-up" class="cta-button-white">Start Writing for Free</a>
         </div>
     </section>
+    </main>
 
     <!-- Footer -->
-    <footer>
-        <div class="footer-container">
-            <div class="footer-column">
-                <h4>Product</h4>
-                <a href="#features">Features</a>
-                <a href="#pricing">Pricing</a>
-                <a href="https://chromewebstore.google.com/detail/g-script/onhpadpojadodaodmnnaeapdhmcdlmpe?hl=en">Chrome Extension</a>
-                <a href="https://addons.mozilla.org/en-US/firefox/addon/g-script/">Firefox Add-on</a>
+    <footer role="contentinfo">
+        <nav aria-label="Footer navigation">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <h4>Product</h4>
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="https://chromewebstore.google.com/detail/g-script/onhpadpojadodaodmnnaeapdhmcdlmpe?hl=en" target="_blank" rel="noopener noreferrer">Chrome Extension</a>
+                    <a href="https://addons.mozilla.org/en-US/firefox/addon/g-script/" target="_blank" rel="noopener noreferrer">Firefox Add-on</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <a href="#" aria-label="Visit help center">Help Center</a>
+                    <a href="#" aria-label="View getting started guide">Getting Started</a>
+                    <a href="#" aria-label="Contact support">Contact Us</a>
+                    <a href="#" aria-label="Report a bug">Bug Reports</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <a href="#" aria-label="About iinkwell">About</a>
+                    <a href="#" aria-label="Read our blog">Blog</a>
+                    <a href="#" aria-label="Privacy policy">Privacy Policy</a>
+                    <a href="#" aria-label="Terms of service">Terms of Service</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Connect</h4>
+                    <a href="https://www.instagram.com/iinkwellapp/" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram">Instagram</a>
+                    <a href="https://x.com/iinkwellapp" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Twitter">Twitter</a>
+                    <a href="https://www.linkedin.com/company/iinkwellapp" target="_blank" rel="noopener noreferrer" aria-label="Connect on LinkedIn">LinkedIn</a>
+                </div>
             </div>
-            <div class="footer-column">
-                <h4>Support</h4>
-                <a href="#">Help Center</a>
-                <a href="#">Getting Started</a>
-                <a href="#">Contact Us</a>
-                <a href="#">Bug Reports</a>
-            </div>
-            <div class="footer-column">
-                <h4>Company</h4>
-                <a href="#">About</a>
-                <a href="#">Blog</a>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-            </div>
-            <div class="footer-column">
-                <h4>Connect</h4>
-                <a href="https://www.instagram.com/iinkwellapp/">Instagram</a>
-                <a href="https://x.com/iinkwellapp">Twitter</a>
-                <a href="https://www.linkedin.com/company/iinkwellapp">LinkedIn</a>
-            </div>
-        </div>
+        </nav>
         <div class="footer-bottom">
             <p>&copy; 2025 iinkwell. Professional screenwriting made simple.</p>
         </div>
     </footer>
+
+    <!-- Video Modal -->
+    <div id="video-modal" class="video-modal" role="dialog" aria-modal="true" aria-labelledby="video-modal-title">
+        <div class="video-modal-content">
+            <button class="video-modal-close" aria-label="Close video modal">&times;</button>
+            <h2 id="video-modal-title" class="sr-only">iinkwell Demo Video</h2>
+            <video id="demo-video" controls>
+                <source src="https://cdn.prod.website-files.com/64997e98529708c66106aad8/65fdded13ad3fcd645d93a9b_features%20video-transcode.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
 
     <script>
         // FAQ Accordion
@@ -1210,6 +1372,46 @@
                 nav.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
             } else {
                 nav.style.boxShadow = 'none';
+            }
+        });
+
+        // Video Modal Functionality
+        const videoModal = document.getElementById('video-modal');
+        const demoVideo = document.getElementById('demo-video');
+        const watchDemoBtn = document.getElementById('watch-demo-btn');
+        const closeBtn = document.querySelector('.video-modal-close');
+
+        // Open modal
+        watchDemoBtn.addEventListener('click', () => {
+            videoModal.classList.add('active');
+            demoVideo.play();
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            closeBtn.focus(); // Move focus to close button for accessibility
+        });
+
+        // Close modal function
+        function closeModal() {
+            videoModal.classList.remove('active');
+            demoVideo.pause();
+            demoVideo.currentTime = 0;
+            document.body.style.overflow = ''; // Restore scrolling
+            watchDemoBtn.focus(); // Return focus to demo button
+        }
+
+        // Close on button click
+        closeBtn.addEventListener('click', closeModal);
+
+        // Close on backdrop click
+        videoModal.addEventListener('click', (e) => {
+            if (e.target === videoModal) {
+                closeModal();
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && videoModal.classList.contains('active')) {
+                closeModal();
             }
         });
     </script>
