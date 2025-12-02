@@ -4,6 +4,7 @@ FROM caddy:alpine
 COPY ./site/*.html /srv/
 COPY ./site/*.css /srv/
 COPY ./site/images/ /srv/images/
+COPY ./site/blog-posts/ /srv/blog-posts/
 
 # Copy Caddyfile
 COPY ./Caddyfile /etc/caddy/Caddyfile
