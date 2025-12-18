@@ -56,6 +56,49 @@
             person_profiles: 'always'
         })
     </script>
+
+    <!-- Scroll Depth Tracking -->
+    <script>
+        (function() {
+            var scrollMilestones = [25, 50, 75, 100];
+            var milestonesReached = {};
+
+            function getScrollPercentage() {
+                var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                if (docHeight === 0) return 100;
+                return Math.round((scrollTop / docHeight) * 100);
+            }
+
+            function checkScrollDepth() {
+                var currentScroll = getScrollPercentage();
+                scrollMilestones.forEach(function(milestone) {
+                    if (currentScroll >= milestone && !milestonesReached[milestone]) {
+                        milestonesReached[milestone] = true;
+                        if (typeof posthog !== 'undefined') {
+                            posthog.capture('scroll_depth', {
+                                depth_percentage: milestone,
+                                page_path: window.location.pathname,
+                                page_title: document.title
+                            });
+                        }
+                    }
+                });
+            }
+
+            var throttleTimer;
+            function throttledScrollCheck() {
+                if (throttleTimer) return;
+                throttleTimer = setTimeout(function() {
+                    checkScrollDepth();
+                    throttleTimer = null;
+                }, 200);
+            }
+
+            window.addEventListener('scroll', throttledScrollCheck, { passive: true });
+            window.addEventListener('load', checkScrollDepth);
+        })();
+    </script>
 </head>
 <body>
     <!-- Skip to main content link for keyboard navigation -->
