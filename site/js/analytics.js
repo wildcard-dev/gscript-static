@@ -110,9 +110,10 @@
                 isPageVisible = false;
                 sendTimeOnPage();
             } else {
+                // Resume tracking but don't reset hasSentEvent
+                // to prevent duplicate events on tab switch + navigate away
                 isPageVisible = true;
                 lastActiveTimestamp = Date.now();
-                hasSentEvent = false;
             }
         });
 
