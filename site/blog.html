@@ -99,6 +99,67 @@
             window.addEventListener('load', checkScrollDepth);
         })();
     </script>
+
+    <!-- Time on Page Tracking -->
+    <script>
+        (function() {
+            var startTime = Date.now();
+            var activeTime = 0;
+            var lastActiveTimestamp = startTime;
+            var isPageVisible = !document.hidden;
+            var hasSentEvent = false;
+
+            function updateActiveTime() {
+                if (isPageVisible) {
+                    activeTime += Date.now() - lastActiveTimestamp;
+                }
+                lastActiveTimestamp = Date.now();
+            }
+
+            function getTimeBucket(seconds) {
+                if (seconds < 10) return '0-10s';
+                if (seconds < 30) return '10-30s';
+                if (seconds < 60) return '30-60s';
+                if (seconds < 180) return '1-3min';
+                if (seconds < 300) return '3-5min';
+                return '5min+';
+            }
+
+            function sendTimeOnPage() {
+                if (hasSentEvent) return;
+                updateActiveTime();
+
+                var totalTimeSeconds = Math.round((Date.now() - startTime) / 1000);
+                var activeTimeSeconds = Math.round(activeTime / 1000);
+
+                if (typeof posthog !== 'undefined' && activeTimeSeconds > 0) {
+                    hasSentEvent = true;
+                    posthog.capture('time_on_page', {
+                        total_time_seconds: totalTimeSeconds,
+                        active_time_seconds: activeTimeSeconds,
+                        time_bucket: getTimeBucket(activeTimeSeconds),
+                        page_path: window.location.pathname,
+                        page_title: document.title
+                    });
+                }
+            }
+
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    updateActiveTime();
+                    isPageVisible = false;
+                    sendTimeOnPage();
+                } else {
+                    isPageVisible = true;
+                    lastActiveTimestamp = Date.now();
+                    hasSentEvent = false;
+                }
+            });
+
+            window.addEventListener('beforeunload', sendTimeOnPage);
+            window.addEventListener('pagehide', sendTimeOnPage);
+        })();
+    </script>
 </head>
 <body>
     <!-- Skip to main content link for keyboard navigation -->
