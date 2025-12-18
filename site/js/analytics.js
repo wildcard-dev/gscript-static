@@ -175,10 +175,10 @@
         }
 
         // Track on page load
-        if (document.readyState === 'complete') {
-            trackBlogPostViewed();
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', trackBlogPostViewed);
         } else {
-            window.addEventListener('load', trackBlogPostViewed);
+            trackBlogPostViewed();
         }
     })();
 
@@ -223,10 +223,10 @@
             });
         }
 
-        if (document.readyState === 'complete') {
-            trackCTAClicks();
-        } else {
+        if (document.readyState === 'loading') {
             window.addEventListener('DOMContentLoaded', trackCTAClicks);
+        } else {
+            trackCTAClicks();
         }
     })();
 
@@ -263,15 +263,12 @@
         function createShareButtons() {
             if (!isBlogPost()) return;
 
-            // Find the author info section (after the date)
-            var authorSection = document.querySelector('main section > div > div[style*="display: flex"][style*="align-items: center"][style*="gap: 1rem"]');
+            // Find the author info section using semantic class
+            var authorSection = document.querySelector('.blog-author-info');
             if (!authorSection) return;
 
             // Check if share buttons already exist
             if (document.querySelector('.blog-share-buttons')) return;
-
-            var pageUrl = encodeURIComponent(window.location.href);
-            var pageTitle = encodeURIComponent(document.title);
 
             var shareContainer = document.createElement('div');
             shareContainer.className = 'blog-share-buttons';
@@ -312,16 +309,24 @@
                                 btn.innerHTML = originalHTML;
                                 btn.classList.remove('copied');
                             }, 2000);
+                        }).catch(function(err) {
+                            // Fallback for browsers without clipboard API or non-HTTPS
+                            console.warn('Failed to copy link:', err);
+                            // Show brief error feedback
+                            btn.classList.add('copy-failed');
+                            setTimeout(function() {
+                                btn.classList.remove('copy-failed');
+                            }, 2000);
                         });
                     }
                 });
             });
         }
 
-        if (document.readyState === 'complete') {
-            createShareButtons();
-        } else {
+        if (document.readyState === 'loading') {
             window.addEventListener('DOMContentLoaded', createShareButtons);
+        } else {
+            createShareButtons();
         }
     })();
 

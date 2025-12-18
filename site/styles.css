@@ -934,6 +934,12 @@ footer {
     background: rgba(16, 185, 129, 0.1);
 }
 
+.share-btn.copy-failed {
+    border-color: #dc2626;
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.1);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     h1 {
