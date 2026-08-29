@@ -3,8 +3,20 @@
 root * /srv
 file_server
 
+# Baseline hardening headers (safe defaults for a static marketing site;
+# no inline scripts/styles are used, so no CSP is set here to avoid
+# breaking the third-party analytics script without a chance to test it).
+header {
+	Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	X-Content-Type-Options "nosniff"
+	X-Frame-Options "DENY"
+	Referrer-Policy "strict-origin-when-cross-origin"
+	Permissions-Policy "geolocation=(), camera=(), microphone=()"
+}
+
 # Add headers for better browser compatibility
 header / Cache-Control "no-cache, no-store, must-revalidate"
+header *.html Cache-Control "no-cache, no-store, must-revalidate"
 header *.css Cache-Control "no-cache, no-store, must-revalidate"
 header *.css Content-Type "text/css"
 header *.js Content-Type "application/javascript"
