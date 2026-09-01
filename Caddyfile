@@ -15,8 +15,11 @@ header {
 }
 
 # Add headers for better browser compatibility
+# Path matchers must start with "/" or Caddy parses the token as the header
+# field name instead of a matcher (e.g. "*.css" set a literal "*.css" header
+# and never touched Content-Type) — see Caddyfile matcher docs.
 header / Cache-Control "no-cache, no-store, must-revalidate"
-header *.html Cache-Control "no-cache, no-store, must-revalidate"
-header *.css Cache-Control "no-cache, no-store, must-revalidate"
-header *.css Content-Type "text/css"
-header *.js Content-Type "application/javascript"
+header /*.html Cache-Control "no-cache, no-store, must-revalidate"
+header /*.css Cache-Control "no-cache, no-store, must-revalidate"
+header /*.css Content-Type "text/css"
+header /*.js Content-Type "application/javascript"
