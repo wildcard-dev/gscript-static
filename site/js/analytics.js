@@ -121,4 +121,213 @@
         window.addEventListener('pagehide', sendTimeOnPage);
     })();
 
+    // ==========================================
+    // Blog Post Viewed Tracking
+    // ==========================================
+    (function() {
+        function isBlogPost() {
+            return window.location.pathname.includes('/blog-posts/');
+        }
+
+        function getBlogMetadata() {
+            var metadata = {
+                post_title: '',
+                post_category: 'Screenwriting', // Default category
+                post_author: '',
+                post_publish_date: '',
+                post_url: window.location.href
+            };
+
+            // Extract from Open Graph meta tags
+            var ogTitle = document.querySelector('meta[property="og:title"]');
+            var ogAuthor = document.querySelector('meta[property="article:author"]');
+            var ogPublishTime = document.querySelector('meta[property="article:published_time"]');
+
+            if (ogTitle) metadata.post_title = ogTitle.content;
+            if (ogAuthor) metadata.post_author = ogAuthor.content;
+            if (ogPublishTime) metadata.post_publish_date = ogPublishTime.content;
+
+            // Fallback to page title if OG title not found
+            if (!metadata.post_title) {
+                metadata.post_title = document.title.split(' - ')[0].trim();
+            }
+
+            // Try to extract category from keywords meta tag
+            var keywords = document.querySelector('meta[name="keywords"]');
+            if (keywords) {
+                var keywordList = keywords.content.split(',').map(function(k) { return k.trim(); });
+                if (keywordList.length > 0) {
+                    metadata.post_category = keywordList[0];
+                }
+            }
+
+            return metadata;
+        }
+
+        function trackBlogPostViewed() {
+            if (!isBlogPost()) return;
+
+            var metadata = getBlogMetadata();
+
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('blog_post_viewed', metadata);
+            }
+        }
+
+        // Track on page load
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', trackBlogPostViewed);
+        } else {
+            trackBlogPostViewed();
+        }
+    })();
+
+    // ==========================================
+    // Blog CTA Click Tracking
+    // ==========================================
+    (function() {
+        function isBlogPost() {
+            return window.location.pathname.includes('/blog-posts/');
+        }
+
+        function getBlogContext() {
+            var ogTitle = document.querySelector('meta[property="og:title"]');
+            return {
+                post_title: ogTitle ? ogTitle.content : document.title.split(' - ')[0].trim(),
+                post_url: window.location.href,
+                page_path: window.location.pathname
+            };
+        }
+
+        function trackCTAClicks() {
+            if (!isBlogPost()) return;
+
+            // Find all CTA buttons within the main content area
+            var ctaButtons = document.querySelectorAll('main .cta-button, article .cta-button');
+
+            ctaButtons.forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    var context = getBlogContext();
+
+                    if (typeof posthog !== 'undefined') {
+                        posthog.capture('blog_cta_clicked', {
+                            cta_text: button.textContent.trim(),
+                            cta_url: button.href || '',
+                            cta_location: button.closest('article') ? 'article_body' : 'blog_header',
+                            post_title: context.post_title,
+                            post_url: context.post_url,
+                            page_path: context.page_path
+                        });
+                    }
+                });
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', trackCTAClicks);
+        } else {
+            trackCTAClicks();
+        }
+    })();
+
+    // ==========================================
+    // Blog Share Button Tracking
+    // ==========================================
+    (function() {
+        function isBlogPost() {
+            return window.location.pathname.includes('/blog-posts/');
+        }
+
+        function getBlogContext() {
+            var ogTitle = document.querySelector('meta[property="og:title"]');
+            return {
+                post_title: ogTitle ? ogTitle.content : document.title.split(' - ')[0].trim(),
+                post_url: window.location.href,
+                page_path: window.location.pathname
+            };
+        }
+
+        function trackShare(platform) {
+            var context = getBlogContext();
+
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('blog_shared', {
+                    share_platform: platform,
+                    post_title: context.post_title,
+                    post_url: context.post_url,
+                    page_path: context.page_path
+                });
+            }
+        }
+
+        function createShareButtons() {
+            if (!isBlogPost()) return;
+
+            // Find the author info section using semantic class
+            var authorSection = document.querySelector('.blog-author-info');
+            if (!authorSection) return;
+
+            // Check if share buttons already exist
+            if (document.querySelector('.blog-share-buttons')) return;
+
+            var shareContainer = document.createElement('div');
+            shareContainer.className = 'blog-share-buttons';
+            shareContainer.innerHTML =
+                '<span class="share-label">Share:</span>' +
+                '<button class="share-btn share-twitter" aria-label="Share on Twitter" data-platform="twitter">' +
+                    '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>' +
+                '</button>' +
+                '<button class="share-btn share-linkedin" aria-label="Share on LinkedIn" data-platform="linkedin">' +
+                    '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>' +
+                '</button>' +
+                '<button class="share-btn share-copy" aria-label="Copy link" data-platform="copy_link">' +
+                    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+                '</button>';
+
+            // Insert after the author section
+            authorSection.parentNode.insertBefore(shareContainer, authorSection.nextSibling);
+
+            // Add click handlers
+            shareContainer.querySelectorAll('.share-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var platform = this.getAttribute('data-platform');
+                    var url = window.location.href;
+                    var title = document.title;
+
+                    trackShare(platform);
+
+                    if (platform === 'twitter') {
+                        window.open('https://twitter.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(title), '_blank', 'width=550,height=420');
+                    } else if (platform === 'linkedin') {
+                        window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url), '_blank', 'width=550,height=420');
+                    } else if (platform === 'copy_link') {
+                        navigator.clipboard.writeText(url).then(function() {
+                            var originalHTML = btn.innerHTML;
+                            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                            btn.classList.add('copied');
+                            setTimeout(function() {
+                                btn.innerHTML = originalHTML;
+                                btn.classList.remove('copied');
+                            }, 2000);
+                        }).catch(function(err) {
+                            // Fallback for browsers without clipboard API or non-HTTPS
+                            console.warn('Failed to copy link:', err);
+                            // Show brief error feedback
+                            btn.classList.add('copy-failed');
+                            setTimeout(function() {
+                                btn.classList.remove('copy-failed');
+                            }, 2000);
+                        });
+                    }
+                });
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', createShareButtons);
+        } else {
+            createShareButtons();
+        }
+    })();
+
 })();
