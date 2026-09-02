@@ -1,0 +1,26 @@
+name: gitleaks
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    container:
+      image: zricethezav/gitleaks:latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run gitleaks (full history, baseline-aware)
+        run: |
+          if [ -f .gitleaks-baseline.json ]; then
+            gitleaks detect --source . --redact --verbose --baseline-path .gitleaks-baseline.json
+          else
+            gitleaks detect --source . --redact --verbose
+          fi
