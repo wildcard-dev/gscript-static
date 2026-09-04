@@ -6,6 +6,7 @@ COPY ./site/*.css /srv/
 COPY ./site/js/ /srv/js/
 COPY ./site/images/ /srv/images/
 COPY ./site/blog-posts/ /srv/blog-posts/
+COPY ./site/downloads/ /srv/downloads/
 
 # Copy Caddyfile
 COPY ./Caddyfile /etc/caddy/Caddyfile
