@@ -1,6 +1,13 @@
 :{$PORT}
 
 root * /srv
+
+# Serve the lead-magnet landing page at a clean URL and redirect the old
+# .html URL to it, so there's one canonical form (avoids duplicate-content
+# SEO issues and matches how the page is now linked site-wide).
+redir /lead-magnet.html /lead-magnet 301
+rewrite /lead-magnet /lead-magnet.html
+
 file_server
 
 # Baseline hardening headers (safe defaults for a static marketing site;
