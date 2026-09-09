@@ -233,6 +233,21 @@ h1 {
     margin-bottom: 2rem;
 }
 
+.hero-screenshot {
+    max-width: 960px;
+    margin: 1rem auto 0;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 25px 50px -12px rgba(17, 24, 39, 0.25);
+}
+
+.hero-screenshot img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
 .secondary-button {
     background: var(--bg-white);
     color: var(--text-dark);
